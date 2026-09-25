@@ -1,19 +1,20 @@
 {config, lib, libfprint-2-tod1-vfs0090-bingch, localPackages, ...}:
 
 let
-  cfg = config.services."06cb-009a-fingerprint-sensor";
+  cfg = config.services.fingerprint06cb009a;
+  wrapModule = import ../../lib/wrapModule.nix;
 in
 
 with lib;
 
 {
   imports = [
-    (args: import ../python-validity (args // {localPackages = localPackages;}))
+    (wrapModule { inherit localPackages; } ../python-validity)
     ../open-fprintd
   ];
 
   options = {
-    services."06cb-009a-fingerprint-sensor" = {
+    services.fingerprint06cb009a = {
       enable = mkOption {
         default = false;
         type = with types; bool;
@@ -27,37 +28,34 @@ with lib;
         ];
       };
 
-      calib-data-file = mkOption {
+      calibDataFile = mkOption {
         type = with types; path;
       };
     };
   };
 
-  config = mkIf cfg.enable (
-    let
-      python-validity-mode = {
-        services.open-fprintd.enable = true;
-        services.python-validity.enable = true;
-      };
+  config = mkIf cfg.enable (mkMerge [
+    (mkIf (cfg.backend == "python-validity") {
+      services.open-fprintd.enable = true;
+      services.python-validity.enable = true;
 
-      libfprint-tod-mode = {
-        services.open-fprintd.enable = false;
-        services.python-validity.enable = false;
+      # this backend replaces the stock fprintd service with open-fprintd
+      services.fprintd.enable = false;
+    })
 
-        services.fprintd = {
+    (mkIf (cfg.backend == "libfprint-tod") {
+      services.open-fprintd.enable = false;
+      services.python-validity.enable = false;
+
+      services.fprintd = {
+        enable = true;
+        tod = {
           enable = true;
-          tod = {
-            enable = true;
-            driver = libfprint-2-tod1-vfs0090-bingch {
-              calib-data-file = cfg.calib-data-file;
-            };
+          driver = libfprint-2-tod1-vfs0090-bingch {
+            calib-data-file = cfg.calibDataFile;
           };
         };
       };
-    in
-      mkMerge [
-        (mkIf (cfg.backend == "python-validity") python-validity-mode)
-        (mkIf (cfg.backend == "libfprint-tod") libfprint-tod-mode)
-      ]
-  );
+    })
+  ]);
 }

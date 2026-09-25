@@ -15,20 +15,17 @@
       pkgs = pkgs;
       localPackages = localPackages;
     };
+    wrapModule = import ./lib/wrapModule.nix;
   in {
-    nixosModules.python-validity = args: import ./modules/python-validity (
-      args // {
-        localPackages = localPackages;
-      }
-    );
+    nixosModules.python-validity = wrapModule { inherit localPackages; } ./modules/python-validity;
 
     nixosModules.open-fprintd = ./modules/open-fprintd;
 
-    nixosModules."06cb-009a-fingerprint-sensor" = args: import ./modules/06cb-009a-fingerprint-sensor (
-      args // {
-        localPackages = localPackages;
-        libfprint-2-tod1-vfs0090-bingch = localLib.libfprint-2-tod1-vfs0090-bingch;
-      }
-    );
+    nixosModules.fingerprint06cb009a = wrapModule {
+      inherit localPackages;
+      libfprint-2-tod1-vfs0090-bingch = localLib.libfprint-2-tod1-vfs0090-bingch;
+    } ./modules/06cb-009a-fingerprint-sensor;
+
+    nixosModules.default = self.nixosModules.fingerprint06cb009a;
   };
 }

@@ -40,7 +40,7 @@ outputs = {
     # ...
     modules = [
       # ...
-      nixos-06cb-009a-fingerprint-sensor.nixosModules."06cb-009a-fingerprint-sensor"
+      nixos-06cb-009a-fingerprint-sensor.nixosModules.default
     ];
   };
 };
@@ -53,10 +53,10 @@ For general information on using flakes with NixOS, see this guide: https://nixo
 1. In your system configuration, enable the service and specify the `python-validity` backend:
 
 ```nix
-services."06cb-009a-fingerprint-sensor" = {                                 
-  enable = true;                                                            
-  backend = "python-validity";                                              
-};   
+services.fingerprint06cb009a = {
+  enable = true;
+  backend = "python-validity";
+};
 ```
 
 2. Rebuild your system.
@@ -88,10 +88,10 @@ services."06cb-009a-fingerprint-sensor" = {
 
 3. Now, update your configuration like this:
    ```nix
-   services."06cb-009a-fingerprint-sensor" = {                                 
-     enable = true;                                                            
-     backend = "libfprint-tod";                                                
-     calib-data-file = ./calib-data.bin;                
+   services.fingerprint06cb009a = {
+     enable = true;
+     backend = "libfprint-tod";
+     calibDataFile = ./calib-data.bin;
    }
    ```
 

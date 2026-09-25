@@ -23,8 +23,5 @@ with lib;
 
     # need to register the dbus configuration files of the package, otherwise we will get access errors
     services.dbus.packages = [ pkgs.open-fprintd ];
-
-    # disable fprintd, since we are replacing it with open-fprintd and we are only adding the tooling of fprintd to the system packages
-    services.fprintd.enable = false;
   };
 }
